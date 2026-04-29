@@ -9,6 +9,13 @@ ToneCraft AI is a privacy-first, locally-optimized customer experience tool. It 
 - **Glassmorphism UI**: Premium, modern interface with Light/Dark mode support.
 - **Privacy-First**: No data sent to 3rd parties except for generation (via encrypted API).
 
+## Deployment (Render)
+1. Push your code to GitHub.
+2. Go to [Render.com](https://render.com) and create a new **Blueprint**.
+3. Connect this repository.
+4. Add your `NVIDIA_API_KEY` in the **Environment** settings.
+5. Render will automatically build and host the app!
+
 ## Tech Stack
 - **Backend**: FastAPI, PyTorch, Transformers, OpenAI (for NVIDIA NIM).
 - **Frontend**: Vanilla HTML/CSS/JS (Glassmorphism design).
