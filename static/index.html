@@ -1,0 +1,432 @@
+<!-- ========================================== -->
+<!-- HEAD CONFIGURATION                         -->
+<!-- ========================================== -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToneCraft AI | Response Composer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================== */
+        /* CSS VARIABLES                              */
+        /* ========================================== */
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --input-bg: rgba(15, 23, 42, 0.5);
+            --card-bg: rgba(15, 23, 42, 0.5);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --surface-color: #ffffff;
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --input-bg: #f8fafc;
+            --card-bg: #f8fafc;
+        }
+
+        /* ========================================== */
+        /* GLOBAL STYLES                              */
+        /* ========================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        /* ========================================== */
+        /* HEADER & TOGGLE                            */
+        /* ========================================== */
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* ========================================== */
+        /* COMPONENTS                                 */
+        /* ========================================== */
+        .glass-panel {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s, color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        button.primary-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button.primary-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        button.primary-btn:active {
+            transform: scale(0.98);
+        }
+
+        button.primary-btn:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+
+        /* ========================================== */
+        /* RESULTS STYLING                            */
+        /* ========================================== */
+        #results {
+            display: none;
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 0.25rem 1rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-Satisfied { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge-Neutral { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-Dissatisfied { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .option-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .option-title {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .copy-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            width: auto;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-main);
+        }
+
+        .option-content {
+            white-space: pre-wrap;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .error-message {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* ========================================== */
+        /* ANIMATIONS                                 */
+        /* ========================================== */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT                               -->
+    <!-- ========================================== -->
+    <div class="container">
+        <button id="themeToggle" class="theme-toggle">☀️ Light Mode</button>
+        
+        <header>
+            <h1>ToneCraft AI</h1>
+            <p>Empathetic Response Generator</p>
+        </header>
+
+        <div class="glass-panel">
+            <div class="form-group">
+                <label for="message">Customer Message</label>
+                <textarea id="message" placeholder="Paste the customer's message here..."></textarea>
+            </div>
+            <button id="analyzeBtn" class="primary-btn">
+                <span id="btnText">Analyze & Generate Drafts</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+            <div id="errorMsg" class="error-message"></div>
+            <p id="loadingHint" style="display:none; text-align:center; margin-top:1rem; color:var(--text-muted); font-size:0.9rem;">
+                This may take 2-5 minutes on a CPU as local AI models generate the response.
+            </p>
+        </div>
+
+        <div id="results" class="glass-panel">
+            <h3>Analysis Results</h3>
+            <div style="margin-top: 1rem;">
+                <span class="sentiment-badge" id="sentimentBadge"></span>
+            </div>
+            
+            <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Generated Options</h4>
+            <div class="options-grid" id="optionsGrid"></div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCRIPT LOGIC                               -->
+    <!-- ========================================== -->
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const messageInput = document.getElementById('message');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const results = document.getElementById('results');
+        const sentimentBadge = document.getElementById('sentimentBadge');
+        const optionsGrid = document.getElementById('optionsGrid');
+        const errorMsg = document.getElementById('errorMsg');
+        const loadingHint = document.getElementById('loadingHint');
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggle.textContent = '☀️ Light Mode';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '🌙 Dark Mode';
+            }
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            analyzeBtn.disabled = true;
+            btnText.textContent = 'Analyzing...';
+            spinner.style.display = 'block';
+            results.style.display = 'none';
+            errorMsg.style.display = 'none';
+            loadingHint.style.display = 'block';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                sentimentBadge.textContent = `${data.sentiment.label} (${(data.sentiment.confidence * 100).toFixed(1)}%)`;
+                sentimentBadge.className = `sentiment-badge badge-${data.sentiment.label}`;
+
+                optionsGrid.innerHTML = '';
+                
+                data.response_options.forEach((opt, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'option-card';
+                    card.innerHTML = `
+                        <div class="option-header">
+                            <span class="option-title">Option ${index + 1}</span>
+                            <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                        </div>
+                        <div class="option-content">${opt}</div>
+                    `;
+                    optionsGrid.appendChild(card);
+                });
+
+                results.style.display = 'block';
+            } catch (err) {
+                errorMsg.textContent = err.message || 'An error occurred during analysis.';
+                errorMsg.style.display = 'block';
+            } finally {
+                analyzeBtn.disabled = false;
+                btnText.textContent = 'Analyze & Generate Drafts';
+                spinner.style.display = 'none';
+                loadingHint.style.display = 'none';
+            }
+        });
+
+        window.copyToClipboard = function(btn) {
+            const content = btn.parentElement.nextElementSibling.innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.style.color = '#10b981';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
