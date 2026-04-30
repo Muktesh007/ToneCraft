@@ -64,33 +64,18 @@ Provide exactly 3 distinct responses. Format your output strictly as follows:
         max_tokens=500,
     )
     
+    import re
     content = response.choices[0].message.content
     
-    options = []
-    current_option = []
+    # Split by Option markers and clean up
+    raw_options = re.split(r'\[OPTION \d+\]', content)
+    options = [opt.strip() for opt in raw_options if opt.strip()]
     
-    for line in content.split('\n'):
-        if line.strip().startswith('[OPTION'):
-            if current_option:
-                options.append('\n'.join(current_option).strip())
-                current_option = []
-        elif line.strip() or current_option:
-            current_option.append(line)
-            
-    if current_option:
-        options.append('\n'.join(current_option).strip())
-        
-    if len(options) < 3:
-        fallback_options = [opt.strip() for opt in content.split('\n\n') if opt.strip()]
-        if len(fallback_options) >= 3:
-            options = fallback_options[:3]
-        else:
-            options = [content]
-            
+    # Ensure we have exactly 3 options
     while len(options) > 3:
         options.pop()
     while len(options) < 3:
-        options.append("Failed to generate additional option.")
+        options.append("Additional option could not be formatted.")
         
     return {
         "response_options": options
