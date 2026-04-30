@@ -42,9 +42,18 @@ The customer's message has been analyzed and their mood is: {sentiment["label"]}
 Your task is to write exactly 3 distinct response options for the business owner to choose from.
 The tone of all options should be: {tone}.
 
-Customer Message: "{customer_message}"
+CRITICAL INSTRUCTION: If the customer's message is a general question, casual chat, or anything NOT related to customer support, complaints, reviews, or business inquiries, you MUST NOT generate responses. Instead, return exactly this fallback message for all 3 options:
 
-Provide exactly 3 distinct responses. Format your output strictly as follows:
+[OPTION 1]
+ToneCraft AI is designed specifically for customer support. Please provide a customer inquiry or review.
+
+[OPTION 2]
+I can only assist with responding to customer service related messages.
+
+[OPTION 3]
+Fallback: Message is not a customer concern.
+
+If it IS a valid customer support message, provide exactly 3 distinct responses. Format your output strictly as follows:
 
 [OPTION 1]
 (Write the first response here)
@@ -54,6 +63,8 @@ Provide exactly 3 distinct responses. Format your output strictly as follows:
 
 [OPTION 3]
 (Write the third response here)
+
+Customer Message: "{customer_message}"
 """
 
     response = client.chat.completions.create(

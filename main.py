@@ -21,6 +21,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def root():
     return FileResponse("static/index.html")
 
+@app.get("/app")
+def get_app():
+    return FileResponse("static/app.html")
+
 @app.post("/analyze", response_model=ComposeResult)
 def analyze(req: AnalyzeRequest):
     if not req.message.strip():

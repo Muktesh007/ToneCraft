@@ -309,30 +309,34 @@
             <p>Empathetic Response Generator</p>
         </header>
 
-        <!-- Homepage Details Section -->
-        <div class="glass-panel" style="margin-bottom: 2rem;">
-            <h2>About ToneCraft AI</h2>
-            <p style="margin-top: 0.5rem; color: var(--text-muted);">ToneCraft AI is a privacy-first, locally-optimized customer experience tool. It analyzes customer message sentiment and generates empathetic, brand-aligned responses using a combination of local BERT models and the NVIDIA NIM API.</p>
-            
-            <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--primary-color);">Key Features</h3>
-            <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: var(--text-main);">
-                <li><strong>Emotion Analysis</strong>: Local BERT-based sentiment detection.</li>
-                <li><strong>AI Response Generation</strong>: 3 distinct response options per query via NVIDIA NIM API.</li>
-                <li><strong>Privacy-First</strong>: Data is handled securely.</li>
-            </ul>
-
-            <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--primary-color);">Guidelines</h3>
-            <ul style="margin-left: 1.5rem; color: var(--text-main);">
-                <li><strong>Use Case</strong>: Enter genuine customer support messages, reviews, or complaints.</li>
-                <li><strong>Scope</strong>: The model will decline to respond to non-customer concerns (e.g., general chats or coding questions).</li>
-                <li><strong>Selection</strong>: Review the options and select the one that best fits your brand's voice.</li>
-            </ul>
+        <div style="margin-bottom: 2rem; text-align: center;">
+            <a href="/" style="color: var(--primary-color); text-decoration: none; font-weight: 500; font-size: 1.1rem;">&larr; Back to Home</a>
         </div>
 
-        <div style="text-align: center; margin-top: 2rem; margin-bottom: 3rem;">
-            <a href="/app" style="display: inline-flex; align-items: center; justify-content: center; background: var(--primary-color); color: white; padding: 1rem 2.5rem; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); transition: transform 0.2s, background 0.2s;">
-                Go to Composer App &rarr;
-            </a>
+        <div class="glass-panel">
+            <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Compose a Response</h3>
+            <div class="form-group">
+                <label for="message">Customer Message</label>
+                <textarea id="message" placeholder="Paste the customer's message here..."></textarea>
+            </div>
+            <button id="analyzeBtn" class="primary-btn">
+                <span id="btnText">Analyze & Generate Drafts</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+            <div id="errorMsg" class="error-message"></div>
+            <p id="loadingHint" style="display:none; text-align:center; margin-top:1rem; color:var(--text-muted); font-size:0.9rem;">
+                Takes 10-30secs based on length of sentence(customer review)
+            </p>
+        </div>
+
+        <div id="results" class="glass-panel">
+            <h3>Analysis Results</h3>
+            <div style="margin-top: 1rem;">
+                <span class="sentiment-badge" id="sentimentBadge"></span>
+            </div>
+            
+            <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Generated Options</h4>
+            <div class="options-grid" id="optionsGrid"></div>
         </div>
     </div>
 
@@ -341,6 +345,15 @@
     <!-- ========================================== -->
     <script>
         const themeToggle = document.getElementById('themeToggle');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const messageInput = document.getElementById('message');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const results = document.getElementById('results');
+        const sentimentBadge = document.getElementById('sentimentBadge');
+        const optionsGrid = document.getElementById('optionsGrid');
+        const errorMsg = document.getElementById('errorMsg');
+        const loadingHint = document.getElementById('loadingHint');
 
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -352,6 +365,73 @@
                 themeToggle.textContent = '🌙 Dark Mode';
             }
         });
+
+        analyzeBtn.addEventListener('click', async () => {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            analyzeBtn.disabled = true;
+            btnText.textContent = 'Analyzing...';
+            spinner.style.display = 'block';
+            results.style.display = 'none';
+            errorMsg.style.display = 'none';
+            loadingHint.style.display = 'block';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                sentimentBadge.textContent = `${data.sentiment.label} (${(data.sentiment.confidence * 100).toFixed(1)}%)`;
+                sentimentBadge.className = `sentiment-badge badge-${data.sentiment.label}`;
+
+                optionsGrid.innerHTML = '';
+                
+                data.response_options.forEach((opt, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'option-card';
+                    card.innerHTML = `
+                        <div class="option-header">
+                            <span class="option-title">Option ${index + 1}</span>
+                            <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                        </div>
+                        <div class="option-content">${opt}</div>
+                    `;
+                    optionsGrid.appendChild(card);
+                });
+
+                results.style.display = 'block';
+            } catch (err) {
+                errorMsg.textContent = err.message || 'An error occurred during analysis.';
+                errorMsg.style.display = 'block';
+            } finally {
+                analyzeBtn.disabled = false;
+                btnText.textContent = 'Analyze & Generate Drafts';
+                spinner.style.display = 'none';
+                loadingHint.style.display = 'none';
+            }
+        });
+
+        window.copyToClipboard = function(btn) {
+            const content = btn.parentElement.nextElementSibling.innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.style.color = '#10b981';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
     </script>
 </body>
 </html>
